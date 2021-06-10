@@ -1,7 +1,5 @@
 import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.List;
-
 import com.opencsv.CSVReader;
 
 class Knn {
@@ -17,10 +15,8 @@ class Knn {
     public List<String[]> getData() throws Exception{
         FileReader reader = new FileReader(this.dataset);
         CSVReader csvReader = new CSVReader(reader);
-        List<String[]> list = new ArrayList<>();
-        
-        
-        list = csvReader.readAll();
+        List<String[]> list = csvReader.readAll();
+    
         csvReader.close();
         reader.close();
         return list;

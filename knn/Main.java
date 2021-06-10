@@ -1,12 +1,15 @@
-class Main {
-    public static void main(String[] args) {
-        Knn knn = new Knn(3, "../datasets/diabetes.csv");
-        
-        try{
-            knn.getData();
-        } catch (Exception e){
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-        }
-        System.out.println();
+class Main {
+    public static void main(String[] args) throws Exception{
+        Knn knn = new Knn(3, "/home/johnazedo/Documents/UFRN/CPCourse/datasets/diabetes.csv");
+        // Use Arrays.toString to convert objects
+        List<String[]> data = new ArrayList<String[]>();
+        // Exception may be here
+        data = knn.getData();
+        System.out.println(Arrays.toString(data.get(5)));
+
     }
 }
