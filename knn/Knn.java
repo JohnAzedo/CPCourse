@@ -1,6 +1,8 @@
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +27,6 @@ class Knn {
             data = new ArrayList<Double[]>();
             error.printStackTrace();
         }
-
-        List<Double> result = euclidianDistance();
-        System.out.println(result);
     }
 
     // Read file 
@@ -54,21 +53,48 @@ class Knn {
         return newArray;
     }
 
-    public List<Double> euclidianDistance() {
+    public List<Double> distance() {
         List<Double> ed = new ArrayList<Double>();
-        int dataSize = data.size();
+        int dataSize = this.data.size();
+        Double sum, component;
+        Double[] array;
+        final Double EUCLIDEAN_PARAM = 2.0;
 
         for(int i=0; i<dataSize; i++){
-            double sum = 0;
-            Double[] array = data.get(i);
-            for(int j=0; j<subject.size(); j++){
-                double test = array[j] - subject.get(j);
-                sum+=Math.pow(test, 2);
+            sum = 0.0;
+            array = this.data.get(i);
+            for(int j=0; j<this.subject.size(); j++){
+                component = array[j] - this.subject.get(j);
+                sum+=Math.pow(component, EUCLIDEAN_PARAM);
             }
 
-            ed.add(Math.sqrt(sum));
+            ed.add(Math.pow(sum, (1/EUCLIDEAN_PARAM)));
         }
-
         return ed;
     }
+
+    public int predict(){
+        List<Double> distances = distance();
+        List<Double> results = new ArrayList<Double>();
+        final int OUTCOME_INDEX = 8;
+
+
+        distances.forEach((distance) -> {
+            if(distance<this.k){
+                results.add(this.data.get(distances.indexOf(distance))[OUTCOME_INDEX]);
+            }
+        });
+
+        
+        var amountWithDiabets = Collections.frequency(results, 1.0);
+        var amountWithoutDiabets = Collections.frequency(results, 0.0);
+
+
+        if(amountWithDiabets>=amountWithoutDiabets){
+           return 1;
+        }else{
+            return 0;
+        }
+    }
+ 
 }
