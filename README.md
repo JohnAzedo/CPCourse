@@ -5,7 +5,7 @@ Concurrent Programming course at UFRN
 
 Specifications:
 - Intel core i5-7400
-- 15,6 GB
+- 15,6 GB of RAM
 - Ubuntu 20.04
 
 This PC can create 32.000 threads.
