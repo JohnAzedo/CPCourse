@@ -1,11 +1,8 @@
 package P01;
 
-import java.util.concurrent.locks.ReentrantLock;
-
 public class Counter extends Thread{
     private int id;
-
-    static ReentrantLock counterLock = new ReentrantLock(true); // enable fairness policy
+    static int sum = 0;
 
     public Counter(int id){
         this.id = id;
@@ -13,25 +10,22 @@ public class Counter extends Thread{
 
     @Override
     public String toString(){
-        return id + ": " + Main.sum;
+        return id + ": " + sum;
     }
-
-    public void incrementCounterWithLock(){
-        counterLock.lock();
-        try{
-            Main.sum++;
-            System.out.println(this.toString());
-        }finally{
-            counterLock.unlock();
-        }
-    }
-
-    public void incrementCounter(){
-        Main.sum++;
+    
+    public void printCounter(){
         System.out.println(this.toString());
     }
 
+    public void getNext(){
+        sum++;
+        printCounter();
+    }
+
+    // Repeating number yet
     public void run(){
-        incrementCounter();
+        synchronized(this){
+            getNext();
+        }
     }
 }

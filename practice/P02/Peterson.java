@@ -1,9 +1,10 @@
 package P02;
 
 public class Peterson implements Runnable {
-    private static int NTHREADS = 4;
+    private static int NTHREADS = 2;
     // When flags[x] is 1, it means that x thread want to enter in the critical section
     private static int[] flags = new int[NTHREADS]; 
+    private static int[] stage = new int[NTHREADS];
     private static int turn = 0;
     private static int counter = 0;
     private int id;
@@ -11,6 +12,7 @@ public class Peterson implements Runnable {
     public static void main(String[]args){
         // Init all flags with 0
         for(int i = 0; i<NTHREADS; i++){
+            stage[i] = 0;
             flags[i] = 1;
         }
 
@@ -33,6 +35,7 @@ public class Peterson implements Runnable {
     @Override
     public void run(){
         for(int i = 0; i<NTHREADS; i++){
+
             if(i != this.id || i != turn){
                 while(flags[i] == 1 && turn < NTHREADS){
                     // Wait?
