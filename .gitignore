@@ -10,7 +10,7 @@
 
 # Log file
 *.log
-
+knn/datasets/
 # BlueJ files
 *.ctxt
 

@@ -1,20 +1,17 @@
 package algorithm;
 
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
 
 class Knn {
     private int k;
     private List<Double[]> data;
     private List<Double[]> tests;
 
-    public Knn(String dataFile, String testFile) {
-        this.data = loadFile(dataFile);
-        this.tests = loadFile(testFile);
+    public Knn(List<Double[]> data, List<Double[]> tests) {
+        this.data = data;
+        this.tests = tests;
     }
 
     public void setNumber(int k){
@@ -88,40 +85,5 @@ class Knn {
             }
         }
         return outcomes;
-    } 
-
-
-    // Read file functions
-    // You can create anothre class with this functions
-    // You can apply single responsibility and dependency inversion principles
-    private List<Double[]> loadFile(String file){
-        try {
-            return getData(file);
-        } catch (Exception error) {
-            return new ArrayList<Double[]>();
-        }
-    }
-
-    private List<Double[]> getData(String file) throws Exception {
-        FileReader reader = new FileReader(file);
-        CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build();
-        List<Double[]> list = new ArrayList<>();
-        String[] line;
-
-        while((line = csvReader.readNext()) != null){
-            list.add(convert(line));
-        }
-
-        csvReader.close();
-        reader.close();
-        return list;
-    }
-
-    private Double[] convert(String[] array){
-        Double[] newArray = new Double[array.length];
-        for(int i=0; i<array.length; i++){
-            newArray[i] = Double.parseDouble(array[i]);
-        }
-        return newArray;
-    }
+    }    
 }

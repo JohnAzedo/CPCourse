@@ -7,7 +7,7 @@ class Main {
     private static final String CSV_FILE_TEST = "/home/johnazedo/Documents/UFRN/CPCourse/knn/datasets/test_diabetes.csv";
     
     public static void main(String[] args) throws Exception{
-        Knn knn = new Knn(CSV_FILE, CSV_FILE_TEST);
+        Knn knn = new Knn(new Reader(CSV_FILE).getData(), new Reader(CSV_FILE_TEST).getData());
 
         for(int number = 1; number<101; number++){
             knn.setNumber(number);
