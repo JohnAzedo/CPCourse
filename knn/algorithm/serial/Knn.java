@@ -1,10 +1,10 @@
-package algorithm;
+package algorithm.serial;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class Knn {
+public class Knn {
     private int k;
     private List<Double[]> data;
     private List<Double[]> tests;
@@ -22,6 +22,7 @@ class Knn {
         final int OUTCOME_INDEX = 8;
         int hits = 0;
         int index = 0;
+        
 
         for(Double[] subject: this.tests){
             int equal = -1;
@@ -42,10 +43,14 @@ class Knn {
 
     public List<Double> predictAll(){
         List<Double> outcomes = new ArrayList<Double>();
+        
+        int index = 0;
+        for(Double[] subject: this.tests){
+            System.out.println(index);
 
-        this.tests.forEach((subject) -> {
             outcomes.add(predict(subject));
-        });
+            index++;
+        }
 
         return outcomes;
     }
