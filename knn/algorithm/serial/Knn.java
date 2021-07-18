@@ -3,13 +3,14 @@ package algorithm.serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import algorithm.Settings;
 
 public class Knn {
     private int k;
-    private List<Double[]> data;
-    private List<Double[]> tests;
+    private double[][] data;
+    private double[][] tests;
 
-    public Knn(List<Double[]> data, List<Double[]> tests) {
+    public Knn(double[][] data, double[][] tests) {
         this.data = data;
         this.tests = tests;
     }
@@ -18,17 +19,16 @@ public class Knn {
         this.k = k;
     }
 
-    public Double accuracy(List<Double> outcomes){
-        final int OUTCOME_INDEX = 8;
+    public double accuracy(double[] outcomes){
         int hits = 0;
         int index = 0;
         
 
-        for(Double[] subject: this.tests){
+        for(int i=0; i<this.tests.length; i++){
             int equal = -1;
 
-            if(index<outcomes.size()){
-                equal = Double.compare(subject[OUTCOME_INDEX], outcomes.get(index));
+            if(index<outcomes.length){
+                equal = Double.compare(this.tests[i][Settings.OUTCOME_INDEX], outcomes[i]);
             }
 
             if(equal==0){
@@ -38,24 +38,20 @@ public class Knn {
             index++;
         }
 
-        return Double.valueOf(hits*100/outcomes.size());
+        return Double.valueOf(hits*100/outcomes.length);
     }
 
-    public List<Double> predictAll(){
-        List<Double> outcomes = new ArrayList<Double>();
+    public double[] predictAll(){
+        double[] outcomes = new double[this.tests.length];
         
-        int index = 0;
-        for(Double[] subject: this.tests){
-            System.out.println(index);
-
-            outcomes.add(predict(subject));
-            index++;
+        for(int i=0; i<this.tests.length; i++){
+            outcomes[i] = predict(this.tests[i]);
         }
 
         return outcomes;
     }
 
-    public Double predict(Double[] subject){
+    public double predict(double[] subject){
         List<Double> results = this.results(subject);
 
         var amountWithDiabets = Collections.frequency(results, 1.0);
@@ -68,25 +64,22 @@ public class Knn {
         }
     }
 
-    private List<Double> results(Double[] subject) {
-        final Double EUCLIDEAN_PARAM = 2.0;
-        final int OUTCOME_INDEX = 8;
-
+    private List<Double> results(double[] subject) {
         List<Double> outcomes = new ArrayList<Double>();
-        Double sum, component, distance;
-        Double[] instance;
+        double sum, component, distance;
+        double[] instance;
 
-        for(int i=0; i<this.data.size(); i++){
+        for(int i=0; i<this.data.length; i++){
             sum = 0.0;
-            instance = this.data.get(i);
-            for(int j=0; j<OUTCOME_INDEX; j++){
+            instance = this.data[i];
+            for(int j=0; j<Settings.OUTCOME_INDEX; j++){
                 component = instance[j] - subject[j];
-                sum+=Math.pow(component, EUCLIDEAN_PARAM);
+                sum+=Math.pow(component, Settings.EUCLIDEAN_PARAM);
             }
-            distance = Math.pow(sum, (1/EUCLIDEAN_PARAM));
+            distance = Math.pow(sum, (1/Settings.EUCLIDEAN_PARAM));
 
             if(distance<this.k){
-                outcomes.add(instance[OUTCOME_INDEX]);
+                outcomes.add(instance[Settings.OUTCOME_INDEX]);
             }
         }
         return outcomes;

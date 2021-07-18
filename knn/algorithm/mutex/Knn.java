@@ -1,86 +1,147 @@
 package algorithm.mutex;
 
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import algorithm.Settings;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Map;
 
-public class Knn implements Runnable {
-    final int OUTCOME_INDEX = 8;
-    final Double EUCLIDEAN_PARAM = 2.0;
+public class Knn implements Runnable{
+    private int constant;
+    private ReentrantReadWriteLock mutex;
+    private double[][] tests;
 
-    private int k;
-    private List<Double[]> data;
-    private Double[] test;
-    private boolean result;
+    private static int index = 0 ;
+    private static Map<Integer, List<Double>> results;
+    private static double[][] data;
 
-    private ReentrantLock mutex; 
-    private static int index = 0;
-    private static List<Double> outcomes;
-
-    public Knn(List<Double[]> data, ReentrantLock mutex) {
-        this.data = data;
-        this.mutex = mutex;
-        outcomes = new ArrayList<Double>();
+    public Knn(double[][] data, double[][] tests, ReentrantReadWriteLock mutex){
+        setMutex(mutex);
+        setData(data);
+        setTests(tests);
+        createReusltsMap();
     }
 
-    public void setTest(Double[] test){
-        this.test = test;
-    }
-
-    public void setNumber(int k){
-        this.k = k;
-    }
-
-    public boolean getResult(){
-        return result;
-    }
-
+    // Concurrent function
     public void predict(){
-        this.results(test);
+        int hits = 0;
+        for(int key : results.keySet()){
+            if(getTestOutcome(key)==getClassification(results.get(key))){
+                hits++;
+            }
+        }
+        System.out.println("N: " + this.constant + "-> Accuracy: " + getAccuracy(hits, getTestSize()));
+    }
+
+    // Concurrent function
+    private void algorithm() throws InterruptedException{
+        double[] instance;
+        while(index<getDataSize()){
+            try {
+                this.mutex.readLock().lock();
+                if(index<getDataSize()){
+                    index++;
+                }
+                instance = data[index];
+            } finally {
+                this.mutex.readLock().unlock();
+            }
+            
+            for(int i=0; i<getTestSize(); i++){
+                if(getDistance(instance, tests[i])<this.constant){
+                    putResultInMap(i, instance[Settings.OUTCOME_INDEX]);
+                }
+            }
+        }
+    }
+
+    // Concurrent function
+    public void putResultInMap(int key, double outcome) throws InterruptedException{
+        try{
+            this.mutex.writeLock().lock();
+            results.get(key).add(outcome);
+        } finally {
+            this.mutex.writeLock().unlock();
+        }
+    }
+
+    private boolean getClassification(List<Double> outcomes){
         var amountWithDiabets = Collections.frequency(outcomes, 1.0);
         var amountWithoutDiabets = Collections.frequency(outcomes, 0.0);
 
         if(amountWithDiabets>=amountWithoutDiabets){
-           result = true;
+            return true;
         }else{
-            result = false;
+            return false;
         }
     }
 
-    private void results(Double[] subject) {
-        Double[] instance;
+    private double getDistance(double[] instance, double [] subject){
+        double sum = 0.0;
+        double component;
 
-        while(index<this.data.size()-1){
-            this.mutex.lock();
-            instance = this.data.get(index);
-
-            if(index<this.data.size()-1){
-                index++;
-            }
-            this.mutex.unlock();
-
-            if(getDistance(instance, subject)<this.k){
-                this.mutex.lock();
-                outcomes.add(instance[OUTCOME_INDEX]);
-                this.mutex.unlock();
-            }
-        }
-    }
-
-    private Double getDistance(Double[] instance, Double[] subject){
-        Double sum = 0.0;
-        Double component;
-
-        for(int j=0; j<OUTCOME_INDEX; j++){
+        for(int j=0; j<Settings.OUTCOME_INDEX; j++){
             component = instance[j] - subject[j];
-            sum+=Math.pow(component, EUCLIDEAN_PARAM);
+            sum+=Math.pow(component, Settings.EUCLIDEAN_PARAM);
         }
-        return Math.pow(sum, (1/EUCLIDEAN_PARAM));
+        return Math.pow(sum, (1/Settings.EUCLIDEAN_PARAM));
     }
 
+    public void setMutex(ReentrantReadWriteLock mutex){
+        this.mutex = mutex;
+    }
+
+    public void setData(double[][] _data){
+        data = _data;
+    }
+
+    public void setConstant(int k){
+        this.constant = k;
+    }
+
+    public void setTests(double[][] tests){
+        this.tests = tests;
+    }
+
+    public int getTestSize(){
+        return this.tests.length;
+    }
+
+    public int getDataSize(){
+        return data.length-1;
+    }
+
+    public void createReusltsMap(){
+        results = new HashMap<Integer, List<Double>>();
+        for(int i=0; i<getTestSize(); i++){
+            results.put(i, new ArrayList<Double>());
+        }  
+    }
+
+    public boolean getTestOutcome(int index){
+        Double outcome = tests[index][Settings.OUTCOME_INDEX];
+        if(outcome!=0.0){
+            return true;
+        }
+
+        return false;
+    }
+
+    public static double getAccuracy(int hits, int size){
+        double accuracy = (double) (hits*100/size);
+        return accuracy;
+    }
+    
     @Override
     public void run() {
-        predict();
-    }    
+        try {
+            algorithm();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

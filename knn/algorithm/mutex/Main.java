@@ -1,30 +1,20 @@
 package algorithm.mutex;
-
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import algorithm.Reader;
+import algorithm.Settings;
 
 public class Main {
-    private static final String CSV_FILE = "/home/johnazedo/Documents/UFRN/CPCourse/knn/datasets/diabetes-300MB.csv";
-    private static final String CSV_FILE_TEST = "/home/johnazedo/Documents/UFRN/CPCourse/knn/datasets/test_diabetes.csv";
-
     public static void main(String[] args) throws Exception {
-        final int K = 23;
-        final ReentrantLock mutex = new ReentrantLock();
-        final Reader tests = new Reader(CSV_FILE_TEST);
-        final List<Double[]> data = tests.getData();
-        final int NUM_THREADS = 4;
-
-        Knn knn = new Knn(new Reader(CSV_FILE).getData(), mutex);
-        knn.setNumber(K);
+        final ReentrantReadWriteLock mutex = new ReentrantReadWriteLock();
+        final double[][] data = new Reader(Settings.CSV_FILE, Settings.NUM_INSTANCIAS, Settings.NUM_COLUMNS).getData();
+        final double[][] tests = new Reader(Settings.CSV_FILE_TEST, Settings.NUM_INSTANCIAS_TEST, Settings.NUM_COLUMNS).getData();
+        Knn knn = new Knn(data, tests, mutex);
+        knn.setConstant(Settings.K);
         System.out.println("Files read!");
 
-        knn.setTest(data.get(0));
-
         ArrayList<Thread> threads = new ArrayList<Thread>();
-        for (int i = 0; i < NUM_THREADS; i++) {
+        for (int i = 0; i < Settings.NUM_THREADS; i++) {
             Thread thread = new Thread(knn);
             threads.add(thread);
         }
@@ -37,7 +27,6 @@ public class Main {
             thread.join();
         }
 
-        System.out.println(knn.getResult());
-
+        knn.predict();
     }
 }

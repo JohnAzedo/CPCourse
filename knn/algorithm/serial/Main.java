@@ -1,24 +1,17 @@
 package algorithm.serial;
-import java.util.List;
 import algorithm.Reader;
+import algorithm.Settings;
 
 class Main {
-    private static final String CSV_FILE = "/home/johnazedo/Documents/UFRN/CPCourse/knn/datasets/diabetes-300MB.csv";
-    private static final String CSV_FILE_TEST = "/home/johnazedo/Documents/UFRN/CPCourse/knn/datasets/test_diabetes.csv";
-    
     public static void main(String[] args) throws Exception{
         final int K = 23;
-        final List<Double[]> tests = new Reader(CSV_FILE_TEST).getData();
-        Knn knn = new Knn(new Reader(CSV_FILE).getData(), tests);
+        final double[][] data = new Reader(Settings.CSV_FILE, Settings.NUM_INSTANCIAS, Settings.NUM_COLUMNS).getData();
+        final double[][] tests = new Reader(Settings.CSV_FILE_TEST, Settings.NUM_INSTANCIAS_TEST, Settings.NUM_COLUMNS).getData();
+        Knn knn = new Knn(data, tests);
         System.out.println("File read!");
         knn.setNumber(K);
-        System.out.println(knn.predict(tests.get(1)));
-        
-
-        // List<Double> results = knn.predictAll();
-        // System.out.println(results);
-
-        // Double accuracy = knn.accuracy(results);
-        // System.out.println("N:"+ K + " -> Accuracy: " + accuracy);
+        double[] results = knn.predictAll();
+        double accuracy = knn.accuracy(results);
+        System.out.println("N:"+ K + " -> Accuracy: " + accuracy);
     }
 }

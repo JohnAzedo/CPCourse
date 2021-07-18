@@ -2,45 +2,53 @@ package algorithm;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Reader {
     private String file;
+    private int sizeOfLines;
+    private int sizeOfColumns;
 
-    public Reader(String file){
+    public Reader(String file, int sizeOfLines, int sizeOfColumns){
         this.file = file;
+        this.sizeOfLines = sizeOfLines;
+        this.sizeOfColumns = sizeOfColumns;
     }
 
-    public List<Double[]> getData(){
+    public double[][] getData(){
         try {
             return loadFile();
         } catch (Exception error) {
-            return new ArrayList<Double[]>();
+            return new double[this.sizeOfLines][this.sizeOfColumns];
         }
     }
 
-    private List<Double[]> loadFile() throws Exception {
-        FileReader reader = new FileReader(this.file);
-        CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build();
-        List<Double[]> list = new ArrayList<>();
-        String[] line;
+    private double[][] loadFile() throws IOException {
+        FileInputStream fis = new FileInputStream(this.file);
+        InputStreamReader isr = new InputStreamReader(fis);
+        BufferedReader br = new BufferedReader(isr);
+        double[][] list = new double[this.sizeOfLines][this.sizeOfColumns];
+        String line;
+        int index = 0;
 
-        while((line = csvReader.readNext()) != null){
-            list.add(convert(line));
+        br.readLine();
+
+        while((line = br.readLine()) != null){
+            String[] array = line.split(",");
+            for(int column=0; column<array.length; column++){
+                list[index][column] = Double.parseDouble(array[column]);
+            }
+            index++;
         }
 
-        csvReader.close();
-        reader.close();
+        br.close();
         return list;
-    }
-
-    private Double[] convert(String[] array){
-        Double[] newArray = new Double[array.length];
-        for(int i=0; i<array.length; i++){
-            newArray[i] = Double.parseDouble(array[i]);
-        }
-        return newArray;
     }
 }
