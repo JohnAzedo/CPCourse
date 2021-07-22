@@ -9,6 +9,6 @@ public class Settings {
     public final static int NUM_INSTANCIAS_TEST = 19;
     public final static int OUTCOME_INDEX = 8;
     public final static Double EUCLIDEAN_PARAM = 2.0;
-    public final static int NUM_THREADS = 5;
-    public final static int K = 23;
+    public final static int NUM_THREADS = 10;
+    public final static int K = 5;
 }

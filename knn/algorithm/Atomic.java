@@ -1,56 +1,47 @@
-package algorithm.mutex;
+package algorithm;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import algorithm.Settings;
-
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class Knn implements Runnable{
+public class Atomic implements Runnable{
     private int constant;
-    private ReentrantReadWriteLock mutex;
     private double[][] tests;
 
-    private static int index = 0 ;
-    private static Map<Integer, List<Double>> results;
-    private static double[][] data;
+    private static AtomicInteger index;
+    private double[][] data;
+    private static ConcurrentHashMap<Integer, List<Double>> results;
 
-    public Knn(double[][] data, double[][] tests, ReentrantReadWriteLock mutex){
-        setMutex(mutex);
+    public Atomic(double[][] data, double[][] tests){
+        index = new AtomicInteger(0);
         setData(data);
-        setTests(tests);
+        setTest(tests);
         createReusltsMap();
     }
 
-    // Concurrent function
-    public void predict(){
+     // Concurrent function
+     public void predict(){
         int hits = 0;
         for(int key : results.keySet()){
-            if(getTestOutcome(key)==getClassification(results.get(key))){
+            var outcomeTestbyId = getTestOutcome(key);
+            var outcomeClassification = getClassification(results.get(key));
+            if(outcomeTestbyId==outcomeClassification){
                 hits++;
             }
         }
-        System.out.println("N: " + this.constant + "-> Accuracy: " + getAccuracy(hits, getTestSize()));
+        System.out.println("Atomic: " + getAccuracy(hits, getTestSize()) + "%");
     }
 
     // Concurrent function
     private void algorithm() throws InterruptedException{
         double[] instance;
-        while(index<getDataSize()){
-            try {
-                this.mutex.readLock().lock();
-                if(index<getDataSize()){
-                    index++;
-                }
-                instance = data[index];
-            } finally {
-                this.mutex.readLock().unlock();
+        while(index.get()<getDataSize()){
+            if(index.get()<getDataSize()){
+                index.getAndIncrement();
             }
-            
+            instance = data[index.get()];
             for(int i=0; i<getTestSize(); i++){
                 if(getDistance(instance, tests[i])<this.constant){
                     putResultInMap(i, instance[Settings.OUTCOME_INDEX]);
@@ -59,14 +50,20 @@ public class Knn implements Runnable{
         }
     }
 
+    public void setConstant(int k){
+        this.constant = k;
+    }
+
     // Concurrent function
     public void putResultInMap(int key, double outcome) throws InterruptedException{
-        try{
-            this.mutex.writeLock().lock();
-            results.get(key).add(outcome);
-        } finally {
-            this.mutex.writeLock().unlock();
-        }
+        // try{
+        //     this.mutex.writeLock().lock();
+        //     results.get(key).add(outcome);
+        // } finally {
+        //     this.mutex.writeLock().unlock();
+        // }
+
+        results.get(key).add(outcome);
     }
 
     private boolean getClassification(List<Double> outcomes){
@@ -91,19 +88,11 @@ public class Knn implements Runnable{
         return Math.pow(sum, (1/Settings.EUCLIDEAN_PARAM));
     }
 
-    public void setMutex(ReentrantReadWriteLock mutex){
-        this.mutex = mutex;
+    public void setData(double[][] data){
+        this.data = data;
     }
-
-    public void setData(double[][] _data){
-        data = _data;
-    }
-
-    public void setConstant(int k){
-        this.constant = k;
-    }
-
-    public void setTests(double[][] tests){
+    
+    public void setTest(double[][] tests){
         this.tests = tests;
     }
 
@@ -112,14 +101,7 @@ public class Knn implements Runnable{
     }
 
     public int getDataSize(){
-        return data.length-1;
-    }
-
-    public void createReusltsMap(){
-        results = new HashMap<Integer, List<Double>>();
-        for(int i=0; i<getTestSize(); i++){
-            results.put(i, new ArrayList<Double>());
-        }  
+        return this.data.length-1;
     }
 
     public boolean getTestOutcome(int index){
@@ -135,7 +117,14 @@ public class Knn implements Runnable{
         double accuracy = (double) (hits*100/size);
         return accuracy;
     }
-    
+
+    public void createReusltsMap(){
+        results = new ConcurrentHashMap<Integer, List<Double>>();
+        for(int i=0; i<getTestSize(); i++){
+            results.put(i, new ArrayList<Double>());
+        }
+    }
+
     @Override
     public void run() {
         try {
