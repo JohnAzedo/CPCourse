@@ -1,16 +1,17 @@
 package producer;
 
-import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class PoolWithOneSemaphore implements Pool {
     private final Semaphore available;
-    private final LinkedList<Integer> dataBuffer;
+    private final BlockingQueue<Integer> dataBuffer;
     private final int CAPACITY = 0;
 
     public PoolWithOneSemaphore(){
         available = new Semaphore(CAPACITY, true);
-        dataBuffer = new LinkedList<Integer>();
+        dataBuffer = new LinkedBlockingQueue<Integer>();
     }
 
     @Override
@@ -22,6 +23,7 @@ public class PoolWithOneSemaphore implements Pool {
     public Integer getItem() {
         // There's a problem here,
         // sometimes the 23' line is called first of 22' line
+        // SOLUTION: Use a concurrent collection
         try { available.acquire(); }
         catch (InterruptedException e) { e.printStackTrace(); }
         return dataBuffer.remove();

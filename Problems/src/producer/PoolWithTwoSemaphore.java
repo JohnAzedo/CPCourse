@@ -1,17 +1,18 @@
 package producer;
 
-import java.util.LinkedList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class PoolWithTwoSemaphore implements Pool {
     private final Semaphore producerSemaphore;
     private final Semaphore consumerSemaphore;
-    private final LinkedList<Integer> dataBuffer;
+    private final BlockingQueue<Integer> dataBuffer;
 
     public PoolWithTwoSemaphore(int num_threads){
         producerSemaphore = new Semaphore(num_threads, true);
         consumerSemaphore = new Semaphore(0, true);
-        dataBuffer = new LinkedList<Integer>();
+        dataBuffer = new LinkedBlockingQueue<Integer>();
     }
 
     @Override

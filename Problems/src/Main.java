@@ -20,7 +20,7 @@ public class Main {
 
     private static void producerApplication(){
         final int NUMBER_OF_THREADS = 4;
-        Pool pool = new PoolWithOneSemaphore();
+        Pool pool = new PoolWithTwoSemaphore(NUMBER_OF_THREADS);
         Producer producer;
         Consumer consumer;
         for(int i=0; i<NUMBER_OF_THREADS; i++){
