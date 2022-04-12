@@ -19,11 +19,11 @@ public class Producer extends Thread{
                 int value = random.nextInt();
                 pool.putItem(value);
                 System.out.printf("Producer %s: Create %d%n", this.pid, value);
-                Thread.sleep(2000);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                break;
             }
         }
-
     }
 }

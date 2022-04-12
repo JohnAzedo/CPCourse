@@ -1,6 +1,4 @@
-import producer.Consumer;
-import producer.Pool;
-import producer.Producer;
+import producer.*;
 import ticket.TicketCounter;
 import ticket.TicketOffice;
 
@@ -21,8 +19,8 @@ public class Main {
     }
 
     private static void producerApplication(){
-        final int NUMBER_OF_THREADS = 3;
-        Pool pool = new Pool();
+        final int NUMBER_OF_THREADS = 4;
+        Pool pool = new PoolWithOneSemaphore();
         Producer producer;
         Consumer consumer;
         for(int i=0; i<NUMBER_OF_THREADS; i++){

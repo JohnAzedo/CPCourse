@@ -12,12 +12,8 @@ public class Consumer extends Thread {
     @Override
     public void run() {
         while (true){
-            try {
-                int value = pool.getItem();
-                System.out.printf("Consumer %s: Get %d%n", this.pid, value);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            int value = pool.getItem();
+            System.out.printf("Consumer %s: Get %d%n", this.pid, value);
         }
     }
 }
